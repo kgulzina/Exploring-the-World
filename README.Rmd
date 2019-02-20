@@ -11,6 +11,7 @@ library(ggplot2)
 library(maps)
 library(sf)
 library(dplyr)
+library(purrr)
 ```
 
 
@@ -26,10 +27,18 @@ oz <- st_as_sf(oz_st)
 
 Some data exploration. Inner works: 
 ```{r}
+# create geometry list
+oz
 
+# see the matrix
+head(oz$geometry[[11]][[1]][[1]])
 ```
 
-
+Read the data containing the coordinates into one dataframe:
+```{r}
+# try to read one matrix
+m1 <- map_depth(oz$geometry, 3, data.frame)
+```
 
 
 
