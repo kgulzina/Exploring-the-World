@@ -5,9 +5,24 @@ date: "February 20, 2019"
 output: html_document
 ---
 
+Libraries:
+```{r}
+library(ggplot2)
+library(maps)
+library(sf)
+library(dplyr)
+```
 
 
+Australia shapefile:
+```{r}
+ozbig <- read_sf("data/gadm36_AUS_shp/gadm36_AUS_1.shp")
 
+oz_st <- maptools::thinnedSpatialPoly(
+  as(ozbig, "Spatial"), tolerance = 0.1, 
+  minarea = 0.001, topologyPreserve = TRUE)
+oz <- st_as_sf(oz_st)
+```
 
 
 
