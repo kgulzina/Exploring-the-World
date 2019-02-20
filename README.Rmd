@@ -36,11 +36,32 @@ head(oz$geometry[[11]][[1]][[1]])
 
 Read the data containing the coordinates into one dataframe:
 ```{r}
-# try to read one matrix
+# this will return list with 11 lists
 m1 <- map_depth(oz$geometry, 3, data.frame)
+
+map_dfr(oz$geometry, map_depth, 2, data.frame)
+
+df <- data.frame(t(1:2))
+colnames(df) <- c("x", "y")
+
+# group enumeration
+count = 1
+
+### use loops
+for (f in 1:11) {
+    for (i in 1:length(oz$geometry[[f]])) {
+        temp <- map_depth(oz$geometry[[f]][[i]], 1, data.frame)
+        temp <- data.frame(matrix(temp, bycol = TRUE))
+        temp %>% rbind(df)
+    }
+}
+
+### comment:  we need to work on this more!!!
+map_depth(oz$geometry[[2]][[1]], 1, data.frame) -> m2
 ```
 
-
+%>% mutate(group = count)
+        count <- count + 1
 
 
 
