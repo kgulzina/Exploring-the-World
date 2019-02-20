@@ -24,6 +24,10 @@ oz_st <- maptools::thinnedSpatialPoly(
 oz <- st_as_sf(oz_st)
 ```
 
+Some data exploration. Inner works: 
+```{r}
+
+```
 
 
 
