@@ -5,12 +5,76 @@ date: "February 20, 2019"
 output: html_document
 ---
 
+Libraries:
+```{r}
+library(ggplot2)
+library(maps)
+library(sf)
+library(dplyr)
+library(purrr)
+```
 
 
+Australia shapefile:
+```{r}
+ozbig <- read_sf("data/gadm36_AUS_shp/gadm36_AUS_1.shp")
+
+oz_st <- maptools::thinnedSpatialPoly(
+  as(ozbig, "Spatial"), tolerance = 0.1, 
+  minarea = 0.001, topologyPreserve = TRUE)
+oz <- st_as_sf(oz_st)
+```
+
+Some data exploration. Inner works: 
+```{r}
+# create geometry list
+oz
+
+# see the matrix
+head(oz$geometry[[11]][[1]][[1]])
+```
+
+#Write a helper function to turn one of these matrices into a single data frame with variables long, lat, group, order. Use purrr functionality to create a dataframe ozplus from the geometry variable. Plot the result with the command:
 
 
+Read the data containing the coordinates into one dataframe:
+```{r}
+# try to read one matrix
+m1 <- map_depth(.x=oz$geometry, .depth=3,  .f=data.frame)
 
 
+m2<-(m1)
+m22<-flatten_dfr(m1)
+m3 <- map_dfc(m2, flatten(m1),.id = row())
+
+m4<-m2%>%tidyr::unnest()
+map_dbl(.x=oz$geometry,.f=mutate())
+m2<-map(oz$geometry, .f=mutate(lenght()))
+
+group_fun <- function (i) { mutate(group=paste(i))}
+  
+
+ t<-m1[[11]][[1]][[1]] %>% mutate(variable=paste("2"))
+ 
+
+map_dfr(.f=mutate(group=length()) m1)
+
+for (i in c(1:11)){
+  for (j in c(1:length(m1[[i]]))){ 
+    for (k in c(1:sum(length(m1[[i]][[j]])))){
+    print(paste("i",i,"j_",j))
+    print(paste("j",j))
+    #(print(m1[[i]][[j]][[1]]))
+    m1[[i]][[j]][[k]]<-m1[[i]][[j]][[k]]%>%mutate(group=paste(i+j))
+ 
+  options(error=recover) 
+      
+    }
+  }
+}
+ 
+
+```
 
 
 
