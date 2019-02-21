@@ -5,14 +5,45 @@ date: "February 20, 2019"
 output: html_document
 ---
 
-Libraries:
+Link to the repo:
 ```{r}
+link <- "https://github.com/kgulzina/stat585lab2"
+```
+
+
+
+Libraries:
+```{r, include = FALSE} 
 library(ggplot2)
 library(maps)
 library(sf)
 library(dplyr)
 library(purrr)
+library(ggspatial)
 ```
+
+
+
+Fun with Middle Earth. We added labels for the cities using package: "ggspatial".
+```{r}
+# read the data set
+cities <- read_sf("data/ME-GIS-master/Cities.shp")
+
+# plot middle earth
+p <- ggplot() +
+  geom_sf(data = read_sf("data/ME-GIS-master/Coastline2.shp"), 
+          colour="grey10", fill="grey90") +
+  geom_sf(data = read_sf("data/ME-GIS-master/Rivers19.shp"), 
+          colour="steelblue", size=0.3) +
+  geom_sf(data = read_sf("data/ME-GIS-master/PrimaryRoads.shp"), 
+          size = 0.7, colour="grey30") +
+  geom_sf(data = read_sf("data/ME-GIS-master/Cities.shp")) +
+  geom_sf_text(mapping = aes(label = Name), data = cities) + 
+  annotation_scale () + 
+  annotation_north_arrow () +
+  theme_bw()
+```
+
 
 
 Australia shapefile:
@@ -27,10 +58,13 @@ oz <- st_as_sf(oz_st)
 
 Some data exploration. Inner works: 
 ```{r}
-# create geometry list
-oz
+# check if list
+is.list(oz$geometry)
 
-# see the matrix
+# check is double list
+str(oz$geometry[[1]])
+
+# see the matrix (any random)
 head(oz$geometry[[11]][[1]][[1]])
 ```
 
@@ -39,6 +73,7 @@ head(oz$geometry[[11]][[1]][[1]])
 
 Read the data containing the coordinates into one dataframe:
 ```{r}
+<<<<<<< HEAD
 # try to read one matrix
 m1 <- map_depth(.x=oz$geometry, .depth=3,  .f=data.frame)
 
@@ -74,9 +109,38 @@ for (i in c(1:11)){
 }
  
 
+=======
+# this will return list with 11 lists
+m1 <- map_depth(oz$geometry, 3, data.frame)
+
+map_dfr(oz$geometry, map_depth, 2, data.frame)
+
+df <- data.frame(t(1:2))
+colnames(df) <- c("x", "y")
+
+# group enumeration
+count = 1
+
+### use loops
+for (f in 1:11) {
+    for (i in 1:length(oz$geometry[[f]])) {
+        temp <- map_depth(oz$geometry[[f]][[i]], 1, data.frame)
+        temp <- data.frame(matrix(temp, bycol = TRUE))
+        temp %>% rbind(df)
+    }
+}
+
+### comment:  we need to work on this more!!!
+map_depth(oz$geometry[[2]][[1]], 1, data.frame) -> m2
+>>>>>>> a27461c227ed6adb2bdc295a79165b79c62d4e9b
 ```
 
 
+will need this later
+```{r}
+smt %>% mutate(group = count)
+        count <- count + 1
+```
 
 
 
