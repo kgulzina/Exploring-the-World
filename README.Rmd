@@ -5,6 +5,13 @@ date: "February 20, 2019"
 output: html_document
 ---
 
+Link to the repo:
+```{r}
+link <- "https://github.com/kgulzina/stat585lab2"
+```
+
+
+
 Libraries:
 ```{r, include = FALSE} 
 library(ggplot2)
@@ -14,6 +21,8 @@ library(dplyr)
 library(purrr)
 library(ggspatial)
 ```
+
+
 
 Fun with Middle Earth. We added labels for the cities using package: "ggspatial".
 ```{r}
@@ -34,8 +43,6 @@ p <- ggplot() +
   annotation_north_arrow () +
   theme_bw()
 ```
-
-
 
 
 
