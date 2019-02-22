@@ -68,8 +68,48 @@ str(oz$geometry[[1]])
 head(oz$geometry[[11]][[1]][[1]])
 ```
 
+#Write a helper function to turn one of these matrices into a single data frame with variables long, lat, group, order. Use purrr functionality to create a dataframe ozplus from the geometry variable. Plot the result with the command:
+
+
 Read the data containing the coordinates into one dataframe:
 ```{r}
+<<<<<<< HEAD
+# try to read one matrix
+m1 <- map_depth(.x=oz$geometry, .depth=3,  .f=data.frame)
+
+
+m2<-(m1)
+m22<-flatten_dfr(m1)
+m3 <- map_dfc(m2, flatten(m1),.id = row())
+
+m4<-m2%>%tidyr::unnest()
+map_dbl(.x=oz$geometry,.f=mutate())
+m2<-map(oz$geometry, .f=mutate(lenght()))
+
+group_fun <- function (i) { mutate(group=paste(i))}
+  
+
+ t<-m1[[11]][[1]][[1]] %>% mutate(variable=paste("2"))
+ 
+
+map_dfr(.f=mutate(group=length()) m1)
+
+for (i in c(1:11)){
+  for (j in c(1:length(m1[[i]]))){ 
+    for (k in c(1:sum(length(m1[[i]][[j]])))){
+    print(paste("i",i,"j_",j))
+    print(paste("j",j))
+    #(print(m1[[i]][[j]][[1]]))
+    m1[[i]][[j]][[k]]<-m1[[i]][[j]][[k]]%>%mutate(group=paste(i+j))
+ 
+  options(error=recover) 
+      
+    }
+  }
+}
+ 
+
+=======
 # this will return list with 11 lists
 m1 <- map_depth(oz$geometry, 3, data.frame)
 
@@ -92,6 +132,7 @@ for (f in 1:11) {
 
 ### comment:  we need to work on this more!!!
 map_depth(oz$geometry[[2]][[1]], 1, data.frame) -> m2
+>>>>>>> a27461c227ed6adb2bdc295a79165b79c62d4e9b
 ```
 
 
