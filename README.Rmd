@@ -117,10 +117,7 @@ for (i in c(1:11)){
 Gulzina: (Miranda can you please take a look at this?)
 Read the data containing the coordinates into one dataframe and plot the resulting dataframe as a polygon:
 ```{r}
-# (trial) this will return list with 11 lists
-m1 <- map_depth(oz$geometry, 3, data.frame)
-
-# write a function
+# write a function (something goes wrong here)
 extract_data <- function(spf) {
 # Reads in the shapefile and extracts data from nested lists, finally
 # recording them into one data frame with columns: long, lat, group and
@@ -142,7 +139,7 @@ extract_data <- function(spf) {
     # use loops to read nested lists
     for (f in 1:length(spf$geometry)) {
         for (i in 1:length(spf$geometry[[f]])) {
-            temp <- map_depth(spf$geometry[[f]][[i]], 1, data.frame)
+            temp <- map_depth(spf$geometry[[f]][[i]], 1, .f = c(1))
             temp <- data.frame(matrix(unlist(temp), ncol = 2, byrow
                                       = FALSE))
             colnames(temp) <- c("long", "lat")
@@ -161,22 +158,58 @@ extract_data <- function(spf) {
     return(df)
 }
 
+
+extract_data_alt <- function(spf) {
+# Reads in the shapefile and extracts data from nested lists, finally
+# recording them into one data frame with columns: long, lat, group and
+# order.
+#
+# Args:
+#   spf:    shapefile of a country
+#
+# Output:
+#   df:     data frame
+    
+    # pull each first element from nested lists
+    # remove hierarchy by flatten
+    # map list with 6705 lists to data.frame function
+    # add new variable = "group"
+    map_depth(.x = spf$geometry, 2, .f = c(1)) %>% flatten %>% 
+        map_dfr(data.frame, .id = "group") -> df 
+    
+    # rename columns
+    colnames(df) <- c("group", "long", "lat")
+    
+    # add new variable = "order"
+    df$order <- seq(from = 1, to = nrow(df), by = 1)
+    
+    return(df)
+}
+
+
+ozplus_alt <- extract_data_alt(oz)
+
+# plot
+ozplus_alt %>% ggplot(aes(x = long, y = lat, group = group, na.rm = TRUE)) + geom_polygon(colour = "black", fill = "grey50")
+
+
+#######################################################################
+# tried to use the first function
 ozplus <- extract_data(oz)
 
-
-# trying to plot
+# plot
 ozplus %>% ggplot(aes(x = long, y = lat, group = group, na.rm = TRUE)) + geom_polygon(colour = "black", fill = "grey50")
 ## something is wrong here: some coordinates are out of boundaries?
 
-# Possible Remedy
-## trying to remove some of them
+## Possible Remedy
+# trying to remove some coordinates
 new_ozplus <- ozplus[-which(0 < ozplus$lat),-4]
 new_ozplus <- new_ozplus[-which(new_ozplus$long < 0),]
 new_ozplus$order <- seq(1, nrow(new_ozplus), 1)
 
 # plot the polygon
 new_ozplus %>% ggplot(aes(x = long, y = lat, group = group, na.rm = TRUE)) + geom_polygon(colour = "black", fill = "grey50")
-## here we lost some tiny parts of Australia :D
+## but now we lost some tiny parts of Australia :D
 ```
 
 
@@ -194,13 +227,31 @@ kg_st <- maptools::thinnedSpatialPoly(
   minarea = 0.001, topologyPreserve = TRUE)
 kg <- st_as_sf(kg_st)
 
-# trying the same function on this data
+# trying the original function on this data, and it works
 kgplus <- extract_data(kg)
 
 kgplus %>% ggplot(aes(x = long, y = lat, group = group, na.rm = TRUE)) + geom_polygon(colour = "black", fill = "grey50")
 ```
-
 Pretty good plot. Resembles my country :D
+
+
+
+
+Mapping Turkey by using alternative function:
+```{r}
+turbig <- read_sf("data/gadm36_TUR_shp/gadm36_TUR_1.shp")
+
+tur_st <- maptools::thinnedSpatialPoly(
+  as(turbig, "Spatial"), tolerance = 0.1, 
+  minarea = 0.001, topologyPreserve = TRUE)
+tur <- st_as_sf(tur_st)
+
+# trying the same function on this data
+turplus <- extract_data_alt(tur)
+
+turplus %>% ggplot(aes(x = long, y = lat, group = group, na.rm = TRUE)) + geom_polygon(colour = "black", fill = "grey50")
+```
+
 
 
 
