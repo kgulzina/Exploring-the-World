@@ -38,10 +38,11 @@ p <- ggplot() +
   geom_sf(data = read_sf("data/ME-GIS-master/PrimaryRoads.shp"), 
           size = 0.7, colour="grey30") +
   geom_sf(data = read_sf("data/ME-GIS-master/Cities.shp")) +
-  geom_sf_text(mapping = aes(label = Name), data = cities) + 
+  geom_sf_text(mapping = aes(label = Name), data = cities, na.rm = T) + 
   annotation_scale () + 
   annotation_north_arrow () +
   theme_bw()
+p
 ```
 
 
@@ -73,18 +74,19 @@ head(oz$geometry[[11]][[1]][[1]])
 Write a helper function to turn one of these matrices into a single data frame with variables long, lat, group, order. Use purrr functionality to create a dataframe ozplus from the geometry variable. Plot the result with the command:
 
 Atousa:
-```{r}
+```{r, eval = F}
 # try to read one matrix
-m1 <- map_depth(.x=oz$geometry, .depth=3,  .f=data.frame)
+m1 <- map_depth(.x=oz$geometry, .depth=3, .f=data.frame)
 
 
 m2<-(m1)
+names(m1) <- NULL
 m22<-flatten_dfr(m1)
 m3 <- map_dfc(m2, flatten(m1),.id = row())
 
 m4<-m2%>%tidyr::unnest()
 map_dbl(.x=oz$geometry,.f=mutate())
-m2<-map(oz$geometry, .f=mutate(lenght()))
+m2<-map(oz$geometry, .f=mutate(length()))
 
 group_fun <- function (i) { mutate(group=paste(i))}
   
@@ -92,7 +94,7 @@ group_fun <- function (i) { mutate(group=paste(i))}
  t<-m1[[11]][[1]][[1]] %>% mutate(variable=paste("2"))
  
 
-map_dfr(.f=mutate(group=length()) m1)
+map_dfr(.f=mutate(group=length()), m1)
 
 for (i in c(1:11)){
   for (j in c(1:length(m1[[i]]))){ 
@@ -153,8 +155,7 @@ extract_data <- function(spf) {
     df <- df[-1,]
     
     # add order variable
-    df$order <- as.integer(seq(from = 1, to = nrow(df), 
-                                   by = 1))
+    df$order <- as.integer(1:nrow(df))
     return(df)
 }
 
@@ -247,7 +248,7 @@ tur_st <- maptools::thinnedSpatialPoly(
 tur <- st_as_sf(tur_st)
 
 # trying the same function on this data
-turplus <- extract_data_alt(tur)
+turplus <- extract_data(tur)
 
 turplus %>% ggplot(aes(x = long, y = lat, group = group, na.rm = TRUE)) + geom_polygon(colour = "black", fill = "grey50")
 ```
