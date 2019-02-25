@@ -25,7 +25,7 @@ library(ggspatial)
 
 
 Fun with Middle Earth. We added labels for the cities using package: "ggspatial".
-```{r}
+```{r, fig.width = 10, fig.height = 10}
 # read the data set
 cities <- read_sf("data/ME-GIS-master/Cities.shp")
 
@@ -54,6 +54,7 @@ ozbig <- read_sf("data/gadm36_AUS_shp/gadm36_AUS_1.shp")
 oz_st <- maptools::thinnedSpatialPoly(
   as(ozbig, "Spatial"), tolerance = 0.1, 
   minarea = 0.001, topologyPreserve = TRUE)
+
 oz <- st_as_sf(oz_st)
 ```
 
@@ -70,57 +71,11 @@ head(oz$geometry[[11]][[1]][[1]])
 ```
 
 
+The following functions read the data containing the coordinates into one dataframe and plot the resulting dataframe as a polygon. We have two functions, extract_data_L1() and extract_data_L2(), which are used according to the number of sub-lists in the geometry attribute of the list. Since the "oz" object has two lists nested for each object, we use the L2 function here.
 
-Write a helper function to turn one of these matrices into a single data frame with variables long, lat, group, order. Use purrr functionality to create a dataframe ozplus from the geometry variable. Plot the result with the command:
-
-Atousa:
-```{r, eval = F}
-# try to read one matrix
-m1 <- map_depth(.x=oz$geometry, .depth=3, .f=data.frame)
-
-
-m2<-(m1)
-names(m1) <- NULL
-m22<-flatten_dfr(m1)
-m3 <- map_dfc(m2, flatten(m1),.id = row())
-
-m4<-m2%>%tidyr::unnest()
-map_dbl(.x=oz$geometry,.f=mutate())
-m2<-map(oz$geometry, .f=mutate(length()))
-
-group_fun <- function (i) { mutate(group=paste(i))}
-  
-
- t<-m1[[11]][[1]][[1]] %>% mutate(variable=paste("2"))
- 
-
-map_dfr(.f=mutate(group=length()), m1)
-
-for (i in c(1:11)){
-  for (j in c(1:length(m1[[i]]))){ 
-    for (k in c(1:sum(length(m1[[i]][[j]])))){
-    print(paste("i",i,"j_",j))
-    print(paste("j",j))
-    #(print(m1[[i]][[j]][[1]]))
-    m1[[i]][[j]][[k]]<-m1[[i]][[j]][[k]]%>%mutate(group=paste(i+j))
- 
-  options(error=recover) 
-      
-    }
-  }
-}
-``` 
-
-
-
-
-
-
-Gulzina: (Miranda can you please take a look at this?)
-Read the data containing the coordinates into one dataframe and plot the resulting dataframe as a polygon:
 ```{r}
-# write a function (something goes wrong here)
-extract_data <- function(spf) {
+# This function extracts data from a shapefile with 1 level in spf$geometry
+extract_data_L1 <- function(spf) {
 # Reads in the shapefile and extracts data from nested lists, finally
 # recording them into one data frame with columns: long, lat, group and
 # order.
@@ -159,8 +114,8 @@ extract_data <- function(spf) {
     return(df)
 }
 
-
-extract_data_alt <- function(spf) {
+# This function extracts data from a shapefile with 2 levels in spf$geometry
+extract_data_L2 <- function(spf) {
 # Reads in the shapefile and extracts data from nested lists, finally
 # recording them into one data frame with columns: long, lat, group and
 # order.
@@ -173,7 +128,7 @@ extract_data_alt <- function(spf) {
     
     # pull each first element from nested lists
     # remove hierarchy by flatten
-    # map list with 6705 lists to data.frame function
+    # map list with sublists to data.frame function
     # add new variable = "group"
     map_depth(.x = spf$geometry, 2, .f = c(1)) %>% flatten %>% 
         map_dfr(data.frame, .id = "group") -> df 
@@ -188,29 +143,10 @@ extract_data_alt <- function(spf) {
 }
 
 
-ozplus_alt <- extract_data_alt(oz)
-
-# plot
-ozplus_alt %>% ggplot(aes(x = long, y = lat, group = group, na.rm = TRUE)) + geom_polygon(colour = "black", fill = "grey50")
-
-
-#######################################################################
-# tried to use the first function
-ozplus <- extract_data(oz)
+ozplus <- extract_data_L2(oz)
 
 # plot
 ozplus %>% ggplot(aes(x = long, y = lat, group = group, na.rm = TRUE)) + geom_polygon(colour = "black", fill = "grey50")
-## something is wrong here: some coordinates are out of boundaries?
-
-## Possible Remedy
-# trying to remove some coordinates
-new_ozplus <- ozplus[-which(0 < ozplus$lat),-4]
-new_ozplus <- new_ozplus[-which(new_ozplus$long < 0),]
-new_ozplus$order <- seq(1, nrow(new_ozplus), 1)
-
-# plot the polygon
-new_ozplus %>% ggplot(aes(x = long, y = lat, group = group, na.rm = TRUE)) + geom_polygon(colour = "black", fill = "grey50")
-## but now we lost some tiny parts of Australia :D
 ```
 
 
@@ -218,7 +154,25 @@ new_ozplus %>% ggplot(aes(x = long, y = lat, group = group, na.rm = TRUE)) + geo
 
 GADM: is a service to provide boundaries without borders.
 
-I choose Kyrgyzstan(for trial, we can change it for any other), and downloaded the shapefile. Read the shapefile and thin it, extract the data and plot the polygon:
+We chose Kyrgyzstan and downloaded the shapefile. The following code reads the shapefile and thins it, then extracts the data and plots the polygon. (Note: here, we're using the L2 function again, and the shapefule that has two nested lists.)
+
+```{r}
+# read data
+kgbig <- read_sf("data/gadm36_KGZ_shp/gadm36_KGZ_2.shp")
+
+kg_st <- maptools::thinnedSpatialPoly(
+  as(kgbig, "Spatial"), tolerance = 0.1, 
+  minarea = 0.001, topologyPreserve = TRUE)
+kg <- st_as_sf(kg_st)
+
+# trying the original function on this data, and it works
+kgplus <- extract_data_L2(kg)
+
+kgplus %>% ggplot(aes(x = long, y = lat, group = group, na.rm = TRUE)) + geom_polygon(colour = "black", fill = "grey50")
+```
+
+Here is the same code using a shapefile for Kyrgyzstan that is only nested one single time, and thus we use the L1 version of the function.
+
 ```{r}
 # read data
 kgbig <- read_sf("data/gadm36_KGZ_shp/gadm36_KGZ_1.shp")
@@ -229,16 +183,16 @@ kg_st <- maptools::thinnedSpatialPoly(
 kg <- st_as_sf(kg_st)
 
 # trying the original function on this data, and it works
-kgplus <- extract_data(kg)
+kgplus <- extract_data_L1(kg)
 
 kgplus %>% ggplot(aes(x = long, y = lat, group = group, na.rm = TRUE)) + geom_polygon(colour = "black", fill = "grey50")
 ```
+
 Pretty good plot. Resembles my country :D
 
 
+We also include an example mapping Turkey using the L2 version of the function:
 
-
-Mapping Turkey by using alternative function:
 ```{r}
 turbig <- read_sf("data/gadm36_TUR_shp/gadm36_TUR_1.shp")
 
@@ -248,34 +202,7 @@ tur_st <- maptools::thinnedSpatialPoly(
 tur <- st_as_sf(tur_st)
 
 # trying the same function on this data
-turplus <- extract_data(tur)
+turplus <- extract_data_L2(tur)
 
 turplus %>% ggplot(aes(x = long, y = lat, group = group, na.rm = TRUE)) + geom_polygon(colour = "black", fill = "grey50")
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
